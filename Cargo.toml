@@ -1,0 +1,48 @@
+[package]
+name = "async-runtime"
+version = "0.1.0"
+edition = "2021"
+description = "A small multi-threaded async runtime: tasks and wakers, a work-stealing scheduler with a cooperative budget, a timing wheel, and a readiness reactor on epoll (Linux) and AFD polling (Windows)."
+license = "MIT"
+
+[lib]
+name = "strand"
+
+[dependencies]
+socket2 = "0.6"
+
+[target.'cfg(loom)'.dependencies]
+loom = "0.7"
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies.windows-sys]
+version = "0.61"
+features = [
+  "Wdk_Foundation",
+  "Wdk_Storage_FileSystem",
+  "Wdk_System_IO",
+  "Win32_Foundation",
+  "Win32_Networking_WinSock",
+  "Win32_Security",
+  "Win32_Storage_FileSystem",
+  "Win32_System_IO",
+  "Win32_System_Threading",
+  "Win32_System_WindowsProgramming",
+]
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "sync", "io-util", "macros"] }
+
+[profile.release]
+lto = true
+codegen-units = 1
+debug = false
+
+[profile.bench]
+lto = true
+codegen-units = 1
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(loom)"] }
